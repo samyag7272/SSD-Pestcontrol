@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { appendRowToSheet } from '../lib/googleSheets';
 
 export default function Home() {
   const [pestIndex, setPestIndex] = useState(0);
@@ -374,11 +375,34 @@ export default function Home() {
                 <label className="form-label" htmlFor="form-phone">Phone Number</label>
                 <input className="form-input" type="tel" id="form-phone" name="phone" placeholder="e.g. +91 98765 43210" autoComplete="tel" required />
               </div>
-              <button type="button" className="form-submit" onClick={() => {
+              <button type="button" className="form-submit" onClick={async (e) => {
+                const btn = e.target as HTMLButtonElement;
                 const n = (document.getElementById('form-name') as HTMLInputElement).value;
                 const p = (document.getElementById('form-phone') as HTMLInputElement).value;
-                if (!n || !p) alert("Please fill in your name and phone number.");
-                else alert("Thank you, " + n + "! We will call you at " + p + " within 30 minutes.");
+                if (!n || !p) {
+                  alert("Please fill in your name and phone number.");
+                  return;
+                }
+                
+                const spreadsheetId = localStorage.getItem('ssd_spreadsheet_id');
+                if (spreadsheetId) {
+                  btn.disabled = true;
+                  const originalText = btn.innerHTML;
+                  btn.innerHTML = 'Submitting...';
+                  try {
+                    await appendRowToSheet(spreadsheetId, [new Date().toLocaleString(), n, p, 'Homepage Form']);
+                    alert("Thank you, " + n + "! We will call you at " + p + " within 30 minutes.");
+                    (document.getElementById('form-name') as HTMLInputElement).value = '';
+                    (document.getElementById('form-phone') as HTMLInputElement).value = '';
+                  } catch (err: any) {
+                    alert("Could not append to Google Sheets (are you logged in as Admin?): " + err.message);
+                  } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                  }
+                } else {
+                  alert("Thank you, " + n + "! We will call you at " + p + " within 30 minutes.\n(Note for Admin: Connect Google Sheets in Admin Dashboard to save this data).");
+                }
               }} aria-label="Submit inspection request">Get Free Inspection →</button>
             </div>
           </div>

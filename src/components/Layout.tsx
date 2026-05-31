@@ -172,6 +172,7 @@ function Footer() {
               <li><Link to="/our-locations">Our Locations</Link></li>
               <li><Link to="/blogs">Blogs</Link></li>
               <li><Link to="/contact-us">Contact Us</Link></li>
+              <li><Link to="/admin" style={{ color: "var(--brand)" }}>Admin Dashboard</Link></li>
             </ul>
             <div style={{ marginTop: '24px' }}>
               <div className="footer-col-title">Availability</div>

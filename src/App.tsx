@@ -13,6 +13,7 @@ import Locations from './pages/Locations';
 import LocationDetail from './pages/LocationDetail';
 import Contact from './pages/Contact';
 import Blogs from './pages/Blogs';
+import Admin from './pages/Admin';
 
 export default function App() {
   return (
@@ -27,6 +28,7 @@ export default function App() {
           <Route path="our-locations/:locationId" element={<LocationDetail />} />
           <Route path="blogs" element={<Blogs />} />
           <Route path="contact-us" element={<Contact />} />
+          <Route path="admin" element={<Admin />} />
         </Route>
       </Routes>
     </BrowserRouter>

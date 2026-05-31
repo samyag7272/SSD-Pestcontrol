@@ -1,8 +1,41 @@
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin, Phone, Mail, Clock } from 'lucide-react';
 import { locationsData } from '../data';
+import { appendRowToSheet } from '../lib/googleSheets';
 
 export default function Contact() {
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name || !phone) {
+      alert("Please enter Name and Phone No.");
+      return;
+    }
+
+    const spreadsheetId = localStorage.getItem('ssd_spreadsheet_id');
+    if (spreadsheetId) {
+      setIsSubmitting(true);
+      try {
+        await appendRowToSheet(spreadsheetId, [new Date().toLocaleString(), name, phone, 'Contact Page']);
+        alert("Thanks! Request submitted successfully.");
+        setName('');
+        setPhone('');
+      } catch (err: any) {
+        alert("Could not append to Google Sheets (are you logged in as Admin?): " + err.message);
+      } finally {
+        setIsSubmitting(false);
+      }
+    } else {
+      alert("Thanks! Request submitted successfully.\n(Admin note: Configure Google Sheets in Admin Dashboard to save this data).");
+      setName('');
+      setPhone('');
+    }
+  };
+
   return (
     <div className="bg-surface min-h-screen">
       <div className="bg-brand-dark text-white py-16">
@@ -67,17 +100,17 @@ export default function Contact() {
           <div className="bg-white p-8 rounded-3xl shadow-[0_4px_12px_rgba(15,23,42,0.06)] h-fit border border-slate-100">
              <span className="text-brand-primary font-bold tracking-wider uppercase text-sm mb-2 block">Send us a message</span>
              <h2 className="text-3xl font-heading font-bold mb-8">Quick Response.</h2>
-             <form onSubmit={e => e.preventDefault()} className="space-y-4">
+             <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-ink-900 mb-1">Name</label>
-                  <input type="text" className="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transform transition-all" placeholder="Your Name" />
+                  <input type="text" value={name} onChange={e => setName(e.target.value)} className="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transform transition-all" placeholder="Your Name" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-ink-900 mb-1">Phone No</label>
-                  <input type="tel" className="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transform transition-all" placeholder="Your Phone Number" />
+                  <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} className="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transform transition-all" placeholder="Your Phone Number" />
                 </div>
-                <button type="submit" className="w-full bg-gradient-to-r from-brand-primary to-brand-dark text-white px-6 py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transition-all mt-4 animate-pulse-glow">
-                  Submit Request
+                <button type="submit" disabled={isSubmitting} className="w-full bg-gradient-to-r from-brand-primary to-brand-dark text-white px-6 py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transition-all mt-4 disabled:opacity-75 disabled:cursor-wait">
+                  {isSubmitting ? 'Submitting...' : 'Submit Request'}
                 </button>
              </form>
           </div>
